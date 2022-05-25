@@ -12,7 +12,7 @@
       favicon: 'https://s3.ap-southeast-2.amazonaws.com/biorefdata/favicon.ico',
       primaryColor: '#167df0',
 
-      bucketUrl: undefined,
+      bucketUrl: 'http://s3.ap-southeast-2.amazonaws.com/biorefdata/',
       // If bucketUrl is undefined, this script tries to determine bucket Rest API URL from this file location itself.
       //   This will only work for locations like these
       //   * https://s3.BUCKET-REGION.amazonaws.com/BUCKET-NAME/index.html
@@ -493,6 +493,12 @@
               }
 
               let url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/,'')}/${encodeURIComponent(content.key)}`
+
+              let isPotentialSymlinkTarget = null;
+              if (content.size < 256) {
+                isPotentialSymlinkTarget = true;
+              }
+
               let installUrl = undefined
               if (url.endsWith('/manifest.plist') && devicePlatform_iOS()) {
                 // generate manifest.plist install urls
@@ -503,14 +509,36 @@
                 name: content.key.split('/').slice(-1)[0],
                 size: content.size,
                 dateModified: content.dateModified,
-
                 key: content.key,
+                isPotentialSymlink: isPotentialSymlinkTarget,
                 url,
                 installUrl
               }
             })
 
+          for (const c of contents) {
+            if (c.isPotentialSymlink) {
+              let target = await this.getSymlinkTarget(c.url);
+              // join symlink target with base url. A bit roundabout so we can url new URL() to join relative paths
+              let parent_key = c.key.slice(0, c.key.lastIndexOf(c.name));
+              let base_url = `http://tempdummy.com/${parent_key}`
+              let new_target_path = new URL(target, base_url).pathname;
+              // remove leading slash
+              let relative_new_target_path = new_target_path.substring(1);
+              // Assign the actual symlink target url
+              c.url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/,'')}/${encodeURIComponent(relative_new_target_path)}`;
+            }
+          }
+
           this.pathContentTableData = [...commonPrefixes, ...contents]
+        },
+        async getSymlinkTarget(url) {
+          let options = {
+            method: 'HEAD'
+          }
+          let headObjectResponse = await fetch(url, options);
+          // This header is set by geesefs for symlinks only
+          return headObjectResponse.headers.get("x-amz-meta---symlink-target");
         },
         sortTableData(columnName) {
           return (rowA, rowB, isAsc) => {
