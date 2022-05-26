@@ -31,6 +31,7 @@ RUN ansible-galaxy install -r cvmfs-client-requirements.yaml -p roles && \
 
 RUN wget https://media.githubusercontent.com/media/maresb/docker-build-s3fs/master/builds/s3fs_1.91+git-v1.91-3_amd64.deb && \
     dpkg -i s3fs_1.91+git-v1.91-3_amd64.deb && \
+    rm s3fs_1.91+git-v1.91-3_amd64.deb && \
     mkdir /opt/s3fs
 
 CMD /app/sync.sh

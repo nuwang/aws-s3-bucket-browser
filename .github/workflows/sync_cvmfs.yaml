@@ -11,65 +11,15 @@ on:
   #   - cron: '0 0 * * 0'
 
 jobs:
-  mirror_cvmmfs_to_s3:
-    runs-on: ubuntu-22.04
+  mirror_cvmfs_to_s3:
+    runs-on: ubuntu-latest
+    container:
+      image: cloudve/mirror_cvmfs_s3:latest
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      options: --privileged
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-           python-version: ${{ matrix.python-version }}
-
-      - name: Run playbook
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          # Required, playbook filepath
-          playbook: cvmfs-client-playbook.yaml
-          # Optional, directory where playbooks live
-          directory: .github/ansible/
-          # Optional, literal inventory file contents
-          inventory: |
-            [client]
-            127.0.0.1 ansible_connection=local
-          # Optional, galaxy requirements filepath
-          requirements: cvmfs-client-requirements.yaml
-          # Optional, additional flags to pass to ansible-playbook
-          sudo: true
-          options: |
-            --verbose
-
-      - name: Verify cvmfs
+      - name: Run mirroring script within container
         run: |
-          ls -alh /cvmfs/data.galaxyproject.org
-        continue-on-error: true
-
-      - name: Install s3fs, s3cmd and rsync
-        run: |
-          sudo apt install -y s3fs s3cmd rsync
-          sudo mkdir /opt/s3fs
-          sudo chown `whoami`:`whoami` /opt/s3fs
-
-      - name: Mount openbiorefdata bucket
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          echo AWS_ACCESS_KEY_ID = $AWS_ACCESS_KEY_ID
-          s3fs biorefdata /opt/s3fs/ -o kernel_cache -o max_background=1000 -o max_stat_cache_size=1000000 -o multipart_size=52 -o parallel_count=30 -o multireq_max=30 -o url="https://s3-ap-southeast-2.amazonaws.com" -o endpoint="ap-southeast-2"
-
-      - name: Verify s3fs
-        run: |
-          ls -alh /opt/s3fs/
-        continue-on-error: true
-
-      - name: Synchronise data
-        run: |
-          rsync --progress -avh --exclude=".*" /cvmfs/data.galaxyproject.org/ /opt/s3fs/galaxy/v1/data.galaxyproject.org/
-
-      - name: Make all symlinks geesefs compatible again
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          find /opt/s3fs/galaxy/v1/data.galaxyproject.org/byhand/xenTro1/ -type l -ls | awk '{print substr($11, 11) " " $13}'  | xargs -l bash -c 's3cmd modify --add-header "x-amz-meta---symlink-target:$1" s3://biorefdata/$0'
+          /app/sync.sh
