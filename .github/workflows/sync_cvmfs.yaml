@@ -1,0 +1,44 @@
+name: Sync from CVMFS to S3
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch: {}
+  # schedule:
+  #   - cron: '0 0 * * 0'
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+           python-version: ${{ matrix.python-version }}
+
+      - name: Run playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          # Required, playbook filepath
+          playbook: cvmfs-client-playbook.yaml
+          # Optional, directory where playbooks live
+          directory: .github/ansible/
+          # Optional, literal inventory file contents
+          inventory: |
+            [client]
+            127.0.0.1 ansible_connection=local
+          # Optional, galaxy requirements filepath
+          requirements: cvmfs-client-requirements.yaml
+          # Optional, additional flags to pass to ansible-playbook
+          sudo: true
+          options: |
+            --verbose
+
+      - name: Verify cvmfs
+        run: |
+          ls -alh /cvmfs/data.galaxyproject.org
