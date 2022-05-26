@@ -42,6 +42,7 @@ jobs:
       - name: Verify cvmfs
         run: |
           ls -alh /cvmfs/data.galaxyproject.org
+        continue-on-error: true
 
       - name: Install s3fs, s3cmd and rsync
         run: |
@@ -55,11 +56,12 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           echo AWS_ACCESS_KEY_ID = $AWS_ACCESS_KEY_ID
-          s3fs biorefdata /opt/s3fs/ -f -o dbglevel=debug -o kernel_cache -o max_background=1000 -o max_stat_cache_size=1000000 -o multipart_size=52 -o parallel_count=30 -o multireq_max=30 -o url="https://s3-ap-southeast-2.amazonaws.com" -o endpoint="ap-southeast-2"
+          s3fs biorefdata /opt/s3fs/ -o kernel_cache -o max_background=1000 -o max_stat_cache_size=1000000 -o multipart_size=52 -o parallel_count=30 -o multireq_max=30 -o url="https://s3-ap-southeast-2.amazonaws.com" -o endpoint="ap-southeast-2"
 
       - name: Verify s3fs
         run: |
           ls -alh /opt/s3fs/
+        continue-on-error: true
 
       - name: Synchronise data
         run: |
