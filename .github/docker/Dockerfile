@@ -5,7 +5,6 @@ ENV PYTHONUNBUFFERED 1
 ENV AWS_ACCESS_KEY_ID=""
 ENV AWS_SECRET_ACCESS_KEY=""
 ENV AWS_BUCKET_NAME=biorefdata
-ENV AWS_BUCKET_NAME=biorefdata
 ENV AWS_ENDPOINT=https://s3-ap-southeast-2.amazonaws.com
 ENV AWS_REGION=ap-southeast-2
 
