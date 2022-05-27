@@ -14,6 +14,7 @@ RUN set -xe; \
         ansible \
         autofs \
         gnupg \
+        jq \
         s3cmd \
         rsync \
     && apt-get autoremove -y && apt-get clean \
