@@ -19,7 +19,7 @@ on:
     - cron: '0 0 * * 0'
 
 jobs:
-  mirror_cvmfs_to_s3:
+  build-matrix:
     runs-on: ubuntu-latest
     container:
       image: cloudve/mirror_cvmfs_s3:latest
@@ -29,9 +29,31 @@ jobs:
         AWS_BUCKET_NAME: ${{ github.event.inputs.bucket_name }}
         AWS_ENDPOINT: ${{ github.event.inputs.endpoint }}
         AWS_REGION: ${{ github.event.inputs.region }}
-
+      options: --privileged
+    steps:
+      - id: mount_cvmfs
+        run: /app/mount.sh
+      - id: set-matrix
+        run: echo '::set-output name=path_matrix::$(/app/matrix.sh)'
+    outputs:
+      path_matrix: ${{ steps.set-matrix.outputs.path_matrix }}
+  mirror_cvmfs_to_s3:
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        path: ${{ fromJson(needs.build-matrix.outputs.path_matrix) }}
+    container:
+      image: cloudve/mirror_cvmfs_s3:latest
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_BUCKET_NAME: ${{ github.event.inputs.bucket_name }}
+        AWS_ENDPOINT: ${{ github.event.inputs.endpoint }}
+        AWS_REGION: ${{ github.event.inputs.region }}
       options: --privileged
     steps:
       - name: Run mirroring script within container
         run: |
-          /app/sync.sh
+          /app/sync.sh ${{ matrix.path }}
