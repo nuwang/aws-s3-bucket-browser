@@ -1,4 +1,5 @@
-FROM ubuntu:20.04 as stage1
+# This container must be run in privileged mode, as the fuse mount for cvmfs does not work otherwise.
+FROM ubuntu:20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED 1
@@ -28,6 +29,7 @@ RUN ansible-galaxy install -r cvmfs-client-requirements.yaml -p roles && \
     sed -i.bak -e '18,22d;26,27d' ./roles/galaxyproject.cvmfs/tasks/client.yml && \
     ansible-playbook -i cvmfs-client-hosts.ini cvmfs-client-playbook.yaml
 
+# We need at least s3fs 1.90 for env var based access keys to work
 RUN wget https://media.githubusercontent.com/media/maresb/docker-build-s3fs/master/builds/s3fs_1.91+git-v1.91-3_amd64.deb && \
     dpkg -i s3fs_1.91+git-v1.91-3_amd64.deb && \
     rm s3fs_1.91+git-v1.91-3_amd64.deb && \
