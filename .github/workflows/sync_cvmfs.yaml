@@ -34,16 +34,18 @@ jobs:
       - id: mount_cvmfs
         run: /app/mount.sh
       - id: set-matrix
-        run: echo '::set-output name=path_matrix::$(/app/matrix.sh)'
+        run: echo '::set-output name=path-matrix::$(/app/matrix.sh)'
+      - name: Show matrix
+        run: echo "The matrix is ${{ steps.set-matrix.outputs.path-matrix }}"
     outputs:
-      path_matrix: ${{ steps.set-matrix.outputs.path_matrix }}
+      path-matrix: ${{ steps.set-matrix.outputs.path-matrix }}
   mirror_cvmfs_to_s3:
     needs: build-matrix
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        path: ${{ fromJson(needs.build-matrix.outputs.path_matrix) }}
+        path: ${{ fromJson(needs.build-matrix.outputs.path-matrix) }}
     container:
       image: cloudve/mirror_cvmfs_s3:latest
       env:
