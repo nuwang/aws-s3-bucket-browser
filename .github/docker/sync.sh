@@ -3,7 +3,7 @@
 set -xe
 
 # mount cvmfs and s3
-mount.sh
+/app/mount.sh
 
 printf \nMirroring cvmfs to s3
 rsync --progress -avh --exclude=".*" /cvmfs/data.galaxyproject.org/$1 /opt/s3fs/galaxy/v1/data.galaxyproject.org/$1
