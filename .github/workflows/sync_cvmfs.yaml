@@ -19,7 +19,7 @@ on:
     - cron: '0 0 * * 0'
 
 jobs:
-  build-matrix:
+  build-dynamic-matrix:
     runs-on: ubuntu-latest
     container:
       image: cloudve/mirror_cvmfs_s3:latest
@@ -39,8 +39,8 @@ jobs:
         run: echo "The matrix is ${{ steps.set-matrix.outputs.path-matrix }}"
     outputs:
       path-matrix: ${{ steps.set-matrix.outputs.path-matrix }}
-  mirror_cvmfs_to_s3:
-    needs: build-matrix
+  mirror-cvmfs-to-s3:
+    needs: build-dynamic-matrix
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
