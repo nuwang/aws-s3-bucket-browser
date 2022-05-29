@@ -520,14 +520,16 @@
           for (const c of contents) {
             if (c.isPotentialSymlink) {
               let target = await this.getSymlinkTarget(c.url);
-              // join symlink target with base url. A bit roundabout so we can url new URL() to join relative paths
-              let parent_key = c.key.slice(0, c.key.lastIndexOf(c.name));
-              let base_url = `http://tempdummy.com/${parent_key}`
-              let new_target_path = new URL(target, base_url).pathname;
-              // remove leading slash
-              let relative_new_target_path = new_target_path.substring(1);
-              // Assign the actual symlink target url
-              c.url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/,'')}/${encodeURIComponent(relative_new_target_path)}`;
+              if (target) {
+                // join symlink target with base url. A bit roundabout so we can url new URL() to join relative paths
+                let parent_key = c.key.slice(0, c.key.lastIndexOf(c.name));
+                let base_url = `http://tempdummy.com/${parent_key}`
+                let new_target_path = new URL(target, base_url).pathname;
+                // remove leading slash
+                let relative_new_target_path = new_target_path.substring(1);
+                // Assign the actual symlink target url
+                c.url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodeURIComponent(relative_new_target_path)}`;
+              }
             }
           }
 
