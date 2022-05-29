@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        path: ${{ fromJson(needs.build-matrix.outputs.path-matrix) }}
+        path: ${{ fromJson(needs.build-dynamic-matrix.outputs.path-matrix) }}
     container:
       image: cloudve/mirror_cvmfs_s3:latest
       env:
