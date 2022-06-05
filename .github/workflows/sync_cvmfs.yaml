@@ -51,9 +51,9 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_BUCKET_NAME: ${{ github.event.inputs.bucket_name }}
-        AWS_ENDPOINT: ${{ github.event.inputs.endpoint }}
-        AWS_REGION: ${{ github.event.inputs.region }}
+        AWS_BUCKET_NAME: ${{ github.event.inputs.bucket_name || 'biorefdata' }}
+        AWS_ENDPOINT: ${{ github.event.inputs.endpoint || 'https://s3-ap-southeast-2.amazonaws.com' }}
+        AWS_REGION: ${{ github.event.inputs.region || 'ap-southeast-2' }}
       options: --privileged
     steps:
       - name: Run mirroring script within container
