@@ -7,7 +7,7 @@
   <script>
     const config = {
       title: 'OpenBioRefData Repository',
-      subtitle: 'Open Data repository for Galaxy and BioConductor projects',
+      subtitle: 'Open Data repository for BioConductor and Galaxy projects',
       logo: 'https://s3.ap-southeast-2.amazonaws.com/biorefdata/logo.png',
       favicon: 'https://s3.ap-southeast-2.amazonaws.com/biorefdata/favicon.ico',
       primaryColor: '#167df0',
@@ -527,8 +527,16 @@
                 let new_target_path = new URL(target, base_url).pathname;
                 // remove leading slash
                 let relative_new_target_path = new_target_path.substring(1);
-                // Assign the actual symlink target url
-                c.url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodeURIComponent(relative_new_target_path)}`;
+                if (target.endsWith("/")) {
+                  // This is a symlink to a directory. Therefore, we need to change it back to a prefix type, instead of content
+                  c.prefix = relative_new_target_path;
+                  c.type = 'prefix';
+                  c.name = c.name + "/";
+                }
+                else {
+                  // Assign the actual symlink target url
+                  c.url = `${(config.bucketMaskUrl || config.bucketUrl).replace(/\/*$/, '')}/${encodeURIComponent(relative_new_target_path)}`;
+                }
               }
             }
           }

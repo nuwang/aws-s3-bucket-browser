@@ -1,7 +1,7 @@
 # OpenBioRefData Browser
 ![-](favicon.ico)
 
-Single HTML file for browsing open data for the Galaxy and BioConductor projects.
+Single HTML file for browsing open data for the BioConductor and Galaxy projects.
 ## [Browser](http://biorefdata.s3-website-ap-southeast-2.amazonaws.com/)
 
 This repository also includes github workflows for periodically syncing Galaxy reference data from
