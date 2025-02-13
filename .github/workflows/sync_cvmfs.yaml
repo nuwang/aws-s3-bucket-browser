@@ -34,7 +34,7 @@ jobs:
       - id: mount_cvmfs
         run: /app/mount.sh
       - id: set-matrix
-        run: echo "::set-output name=path-matrix::$(/app/matrix.sh)"
+        run: echo "path-matrix=$(/app/matrix.sh)" >> "$GITHUB_OUTPUT"
       - name: Show matrix
         run: echo "The matrix is ${{ steps.set-matrix.outputs.path-matrix }}"
     outputs:
